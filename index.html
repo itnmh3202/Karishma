@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Serenity Shift · Durga ↔ Kali</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <canvas id="particleCanvas"></canvas>
+
+  <div class="page-wrapper">
+
+    <!-- ── HEADER ── -->
+    <header class="site-header">
+      <h1 class="site-title">Serenity Shift</h1>
+      <p class="site-subtitle">
+        <span class="label-durga">☀ Durga</span>
+        <span class="divider">·</span>
+        <span class="label-kali">☽ Kali</span>
+      </p>
+    </header>
+
+    <main>
+
+      <!-- ══ STEP 1: API KEY ══ -->
+      <section class="step-card" id="keyCard">
+        <p class="step-label">① fal.ai API Key</p>
+        <p class="step-hint">
+          Free $10 credit on signup — no credit card needed.
+          <a href="https://fal.ai/dashboard/keys" target="_blank" rel="noopener">Get your key at fal.ai ↗</a>
+          &nbsp;·&nbsp; Lives only in browser memory, never stored.
+        </p>
+        <div class="input-row">
+          <input
+            type="password"
+            id="apiKeyInput"
+            placeholder="key-xxxxxxxxxxxxxxxx"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button id="btnSetKey" class="btn-confirm">Confirm</button>
+        </div>
+        <p class="key-status" id="keyStatus"></p>
+      </section>
+
+      <!-- ══ STEP 2: UPLOAD YOUR PHOTO ══ -->
+      <section class="step-card">
+        <p class="step-label">② Upload your photo</p>
+        <p class="step-hint">Your face will be locked in — every generated image uses it.</p>
+
+        <!-- The visual stage: mandala + aura + upload zone / image -->
+        <div class="stage-wrap">
+
+          <div class="mandala-ring" id="mandalaRing">
+            <svg viewBox="0 0 420 420" xmlns="http://www.w3.org/2000/svg">
+              <g transform="translate(210,210)">
+                <ellipse cx="0" cy="-165" rx="16" ry="42" class="petal" style="transform:rotate(0deg)"/>
+                <ellipse cx="0" cy="-165" rx="16" ry="42" class="petal" style="transform:rotate(30deg)"/>
+                <ellipse cx="0" cy="-165" rx="16" ry="42" class="petal" style="transform:rotate(60deg)"/>
+                <ellipse cx="0" cy="-165" rx="16" ry="42" class="petal" style="transform:rotate(90deg)"/>
+                <ellipse cx="0" cy="-165" rx="16" ry="42" class="petal" style="transform:rotate(120deg)"/>
+                <ellipse cx="0" cy="-165" rx="16" ry="42" class="petal" style="transform:rotate(150deg)"/>
+                <ellipse cx="0" cy="-165" rx="16" ry="42" class="petal" style="transform:rotate(180deg)"/>
+                <ellipse cx="0" cy="-165" rx="16" ry="42" class="petal" style="transform:rotate(210deg)"/>
+                <ellipse cx="0" cy="-165" rx="16" ry="42" class="petal" style="transform:rotate(240deg)"/>
+                <ellipse cx="0" cy="-165" rx="16" ry="42" class="petal" style="transform:rotate(270deg)"/>
+                <ellipse cx="0" cy="-165" rx="16" ry="42" class="petal" style="transform:rotate(300deg)"/>
+                <ellipse cx="0" cy="-165" rx="16" ry="42" class="petal" style="transform:rotate(330deg)"/>
+              </g>
+              <circle cx="210" cy="210" r="128" class="mandala-circle" fill="none" stroke-width="1.5"/>
+              <circle cx="210" cy="210" r="100" class="mandala-circle" fill="none" stroke-width="0.8"/>
+            </svg>
+          </div>
+
+          <div class="aura-ring" id="auraRing"></div>
+
+          <!-- UPLOAD ZONE: shown before a photo is chosen -->
+          <div class="upload-zone" id="uploadZone">
+            <input type="file" id="fileInput" accept="image/*" />
+            <label for="fileInput" class="upload-label">
+              <span class="upload-icon">🪷</span>
+              <span class="upload-text">Upload your photo</span>
+              <span class="upload-hint">drag & drop · or click</span>
+            </label>
+          </div>
+
+          <!-- PHOTO PREVIEW: your uploaded photo with live CSS effects
+               This is separate from the generated image.
+               The CSS filters (hue, saturation etc.) are applied here
+               so you can see the Durga ↔ Kali shift live as you drag. -->
+          <div class="image-frame" id="photoFrame" hidden>
+            <img id="photoImg" src="" alt="Your uploaded photo" />
+            <div class="c-overlay gold-overlay"></div>
+            <div class="c-overlay blood-overlay"></div>
+            <div class="third-eye" id="thirdEyePhoto">👁</div>
+            <div class="frame-badge">📸 Your photo</div>
+          </div>
+
+          <!-- AI GENERATED IMAGE: shown after generation -->
+          <div class="image-frame" id="genFrame" hidden>
+            <img id="genImg" src="" alt="AI-generated divine transformation" />
+            <div class="c-overlay gold-overlay"></div>
+            <div class="c-overlay blood-overlay"></div>
+            <div class="third-eye" id="thirdEyeGen">👁</div>
+            <div class="frame-badge" id="genBadge">✨ Generated</div>
+
+            <!-- Loading overlay sits inside the generated frame -->
+            <div class="loading-overlay" id="loadingOverlay" hidden>
+              <div class="spinner"></div>
+              <p id="loadingText">Summoning your divine form…</p>
+              <p class="loading-sub">fal.ai is rendering with your face · ~20-40s</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Toggle: switch between showing your photo vs the generated image -->
+        <div class="toggle-row" id="toggleRow" hidden>
+          <button class="btn-toggle active" id="btnShowPhoto" onclick="showPhoto()">📸 Your photo</button>
+          <button class="btn-toggle" id="btnShowGen" onclick="showGen()">✨ Generated</button>
+          <button class="btn-text" id="btnNewPhoto">New photo ↺</button>
+        </div>
+
+      </section>
+
+      <!-- ══ STEP 3: SERENITY SLIDER ══ -->
+      <section class="step-card">
+        <p class="step-label">③ Choose your form — then Generate</p>
+
+        <div class="meter-labels">
+          <span class="durga-side">☀ Serene · Durga</span>
+          <span class="kali-side">Kali · Fierce ☽</span>
+        </div>
+        <div class="slider-wrapper">
+          <div class="slider-track-bg"></div>
+          <input type="range" id="serenitySlider" min="0" max="100" value="100" step="1" />
+        </div>
+        <div class="meter-readout">
+          <span id="stateName">✦ Radiant Durga</span>
+          <span id="serenityNumber">100</span>
+        </div>
+      </section>
+
+      <!-- ══ GENERATE ══ -->
+      <div class="action-row">
+        <button class="btn-generate" id="btnGenerate" disabled>Generate with my face ↗</button>
+      </div>
+
+      <!-- State description -->
+      <p class="desc-box" id="descBox">
+        She radiates golden light. The lotus blooms beneath her. Compassion without boundary. Peace without end.
+      </p>
+
+      <p class="status-bar" id="statusBar"></p>
+      <p class="error-bar"  id="errorBar"></p>
+
+    </main>
+
+    <!-- ══ HOW IT WORKS ══ -->
+    <section class="explainer">
+      <h2 class="explainer-title">How the pipeline works</h2>
+      <div class="explainer-grid">
+        <div class="explainer-card">
+          <span class="exp-icon">🧬</span>
+          <strong>fal.ai · PuLID Flux</strong>
+          <p>Your face photo is sent as a reference image. PuLID locks onto your facial features and transplants them into the divine pose and style — not just a description, your actual face.</p>
+        </div>
+        <div class="explainer-card">
+          <span class="exp-icon">🎨</span>
+          <strong>CSS live effects</strong>
+          <p>The slider updates <code>--serenity</code> on <code>:root</code> instantly. Your photo preview reacts live — filters, glows, overlays all shift in real time while you decide your form.</p>
+        </div>
+        <div class="explainer-card">
+          <span class="exp-icon">⚡</span>
+          <strong>JS → CSS bridge</strong>
+          <p><code>root.style.setProperty()</code> updates CSS custom properties from the slider event. No class toggling — one variable cascades to every visual in the stylesheet.</p>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>HTML · CSS · Vanilla JS · fal.ai PuLID Flux · Deployed free on GitHub Pages</p>
+    </footer>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
